@@ -2,8 +2,10 @@ package main
 
 import (
 	"basic-rest-api-go/configs"
+	"basic-rest-api-go/databases"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -26,6 +28,14 @@ func main() {
 
 	// initialized config
 	config := configs.Init()
+
+	// initialized database
+	fmt.Println("Connecting to database...", config.DBConn)
+	db, err := databases.Init(config.DBConn)
+	if err != nil {
+		log.Fatal("Failed to initialize database:", err)
+	}
+	defer db.Close()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "Hello, World!")
@@ -126,7 +136,7 @@ func main() {
 	addr := fmt.Sprintf(":%s", config.Port)
 	fmt.Println("Starting server on :", config.Port)
 
-	err := http.ListenAndServe(addr, nil)
+	err = http.ListenAndServe(addr, nil)
 	if err != nil {
 		fmt.Println("Failed to start server:", err)
 	}
