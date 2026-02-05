@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"basic-rest-api-go/internal/dto"
 	"basic-rest-api-go/internal/models"
 	"database/sql"
 )
@@ -13,8 +14,12 @@ func NewProductRepository(db *sql.DB) *ProductRepository {
 	return &ProductRepository{db: db}
 }
 
-func (repo *ProductRepository) GetAll() ([]models.Product, error) {
+func (repo *ProductRepository) GetAll(search *dto.SearchProductDTO) ([]models.Product, error) {
 	query := "SELECT id, name, price, stock FROM products"
+
+	if search != nil && search.Name != "" {
+		query += " WHERE LOWER(name) LIKE LOWER('%" + search.Name + "%')"
+	}
 	rows, err := repo.db.Query(query)
 	if err != nil {
 		return nil, err

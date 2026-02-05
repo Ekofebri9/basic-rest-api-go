@@ -1,6 +1,7 @@
 package services
 
 import (
+	"basic-rest-api-go/internal/dto"
 	"basic-rest-api-go/internal/models"
 	"basic-rest-api-go/internal/repositories"
 	"errors"
@@ -17,8 +18,8 @@ func NewProductService(repo *repositories.ProductRepository, categoryRepo *repos
 	return &ProductService{repo: repo, categoryRepo: categoryRepo}
 }
 
-func (s *ProductService) GetAll() ([]models.Product, error) {
-	return s.repo.GetAll()
+func (s *ProductService) GetAll(search *dto.SearchProductDTO) ([]models.Product, error) {
+	return s.repo.GetAll(search)
 }
 
 func (s *ProductService) GetByID(id int) (*models.Product, error) {
