@@ -17,10 +17,12 @@ func NewProductRepository(db *sql.DB) *ProductRepository {
 func (repo *ProductRepository) GetAll(search *dto.SearchProductDTO) ([]models.Product, error) {
 	query := "SELECT id, name, price, stock FROM products"
 
+	var args []interface{}
 	if search != nil && search.Name != "" {
-		query += " WHERE LOWER(name) LIKE LOWER('%" + search.Name + "%')"
+		query += " WHERE name ILIKE $1"
+		args = append(args, "%"+search.Name+"%")
 	}
-	rows, err := repo.db.Query(query)
+	rows, err := repo.db.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}
