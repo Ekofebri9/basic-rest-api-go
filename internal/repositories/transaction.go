@@ -5,6 +5,8 @@ import (
 	"basic-rest-api-go/internal/models"
 	"database/sql"
 	"fmt"
+
+	"github.com/lib/pq"
 )
 
 type TransactionRepository struct {
@@ -86,4 +88,49 @@ func (repo *TransactionRepository) CreateTransaction(items []dto.CheckoutItem) (
 		TotalAmount: totalAmount,
 		Details:     details,
 	}, nil
+}
+
+func (repo *TransactionRepository) GetTransactionsByDateRange(startDate, endDate string) ([]*models.Transaction, error) {
+	var transactions []*models.Transaction
+
+	rows, err := repo.db.Query("SELECT id, total_amount FROM transactions WHERE created_at BETWEEN $1 AND $2", startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var transaction models.Transaction
+		err := rows.Scan(&transaction.ID, &transaction.TotalAmount)
+		if err != nil {
+			return nil, err
+		}
+		transactions = append(transactions, &transaction)
+	}
+
+	return transactions, nil
+}
+
+func (repo *TransactionRepository) GetTransactionDetails(transactionID []int) ([]models.TransactionDetail, error) {
+	var details []models.TransactionDetail
+
+	rows, err := repo.db.Query(
+		"SELECT id, transaction_id, product_id, quantity, subtotal FROM transaction_details WHERE transaction_id = ANY($1)",
+		pq.Array(transactionID),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var detail models.TransactionDetail
+		err := rows.Scan(&detail.ID, &detail.TransactionID, &detail.ProductID, &detail.Quantity, &detail.Subtotal)
+		if err != nil {
+			return nil, err
+		}
+		details = append(details, detail)
+	}
+
+	return details, nil
 }

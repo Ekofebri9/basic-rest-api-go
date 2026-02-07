@@ -30,9 +30,11 @@ func main() {
 
 	productsService := services.NewProductService(productRepo, categoryRepo)
 	transactionService := services.NewTransactionService(transactionRepo)
+	reportService := services.NewReportService(transactionRepo, productRepo)
 
 	productHandler := handlers.NewProductHandler(productsService)
 	transactionHandler := handlers.NewTransactionHandler(transactionService)
+	reportHandler := handlers.NewReportHandler(reportService)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "Hello, World!")
@@ -50,6 +52,8 @@ func main() {
 	http.HandleFunc("/api/products", productHandler.HandleProducts)
 
 	http.HandleFunc("/api/checkout", transactionHandler.HandleCheckout) // POST
+
+	http.HandleFunc("/api/report", reportHandler.HandleReport)
 
 	addr := fmt.Sprintf(":%s", config.Port)
 	fmt.Println("Starting server on :", config.Port)
