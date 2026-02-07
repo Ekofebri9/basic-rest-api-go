@@ -26,8 +26,13 @@ func main() {
 
 	productRepo := repositories.NewProductRepository(db)
 	categoryRepo := repositories.NewCategoryRepository(db)
+	transactionRepo := repositories.NewTransactionRepository(db)
+
 	productsService := services.NewProductService(productRepo, categoryRepo)
+	transactionService := services.NewTransactionService(transactionRepo)
+
 	productHandler := handlers.NewProductHandler(productsService)
+	transactionHandler := handlers.NewTransactionHandler(transactionService)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "Hello, World!")
@@ -43,6 +48,8 @@ func main() {
 
 	http.HandleFunc("/api/products/", productHandler.HandleProductByID)
 	http.HandleFunc("/api/products", productHandler.HandleProducts)
+
+	http.HandleFunc("/api/checkout", transactionHandler.HandleCheckout) // POST
 
 	addr := fmt.Sprintf(":%s", config.Port)
 	fmt.Println("Starting server on :", config.Port)
